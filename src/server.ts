@@ -1,23 +1,29 @@
 import { Elysia } from "elysia";
-import { swagger } from "@elysiajs/swagger";
 import * as dotenv from "dotenv";
 dotenv.config();
 
-const app = new Elysia()
-  .use(swagger())
-  // .use(userRoutes)
-  .listen(3000)
-  .get("/", "Hello World")
-  .get("/hello", () => {
-    return {
-      name: "hello",
-    };
-  });
+// Routes
+import { userRoutes } from "./routes/userRoutes";
+import { uploadRoute } from "./routes/uploadRoutes";
+import { analyzeRoute } from "./routes/analyzeRoutes";
+import cors from "@elysiajs/cors";
 
+const app = new Elysia()
+  .use(
+    cors({
+      origin: "http://localhost:5173",
+    }),
+  )
+  .use(userRoutes)
+  .use(uploadRoute)
+  .use(analyzeRoute)
+  .listen(3000);
+
+// Use swagger in development server
 if (process.env.NODE_ENV != "production") {
   import("@elysiajs/swagger").then(({ default: swagger }) => {
     app.use(swagger());
   });
 }
 
-console.log(`🚀 Server running at http://localhost:3000`);
+console.log(`Server running at http://localhost:3000`);

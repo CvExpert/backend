@@ -8,6 +8,7 @@
   "devDependencies": {
     "@elysiajs/swagger": "^1.2.0",
     "@types/bun": "latest",
+    "@types/jsonwebtoken": "^9.0.8",
     "drizzle-kit": "^0.30.4"
   },
   "peerDependencies": {
@@ -15,9 +16,14 @@
   },
   "dependencies": {
     "@electric-sql/pglite": "^0.2.16",
+    "@elysiajs/cors": "^1.2.0",
+    "@elysiajs/jwt": "^1.2.0",
+    "better-auth": "^1.1.16",
     "dotenv": "^16.4.7",
     "drizzle-orm": "^0.39.2",
     "elysia": "^1.2.12",
-    "postgres": "^3.4.5"
+    "jsonwebtoken": "^9.0.2",
+    "postgres": "^3.4.5",
+    "uuid": "^11.1.0"
   }
 }

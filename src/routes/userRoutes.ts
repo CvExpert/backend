@@ -1,6 +1,6 @@
-import { Elysia } from "elysia";
-import { signIn, signUp } from "../controllers/userControlller";
-import jwt from "jsonwebtoken";
+import { Elysia } from 'elysia';
+import { signIn, signUp } from '../controllers/userControlller';
+import jwt from 'jsonwebtoken';
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY as string;
 
@@ -16,11 +16,11 @@ interface SignUpBody {
   terms: boolean;
 }
 
-export const userRoutes = new Elysia({ prefix: "/user" })
-  .post("/signin", async ({ body }: { body: SignInBody }) => {
+export const userRoutes = new Elysia({ prefix: '/user' })
+  .post('/signin', async ({ body }: { body: SignInBody }) => {
     const { email, password } = body;
     if (!email || !password) {
-      return { error: "Email and password are required." };
+      return { error: 'Email and password are required.' };
     }
     try {
       console.log(`signin : ${email} , ${password}`);
@@ -29,11 +29,11 @@ export const userRoutes = new Elysia({ prefix: "/user" })
       return { error: error.message };
     }
   })
-  .post("/signup", async ({ body }: { body: SignUpBody }) => {
-    console.log("signup called");
+  .post('/signup', async ({ body }: { body: SignUpBody }) => {
+    console.log('signup called');
     const { name, email, password, terms } = body;
     if (!name || !email || !password) {
-      return { error: "All fields are required." };
+      return { error: 'All fields are required.' };
     }
     try {
       console.log(`signup : ${email} , ${password}, ${name}`);
@@ -43,13 +43,13 @@ export const userRoutes = new Elysia({ prefix: "/user" })
       return { error: error.message };
     }
   })
-  .get("/userinfo", async ({ request }) => {
-    const authHeader = request.headers.get("authorization");
+  .get('/userinfo', async ({ request }) => {
+    const authHeader = request.headers.get('authorization');
     if (!authHeader) {
-      return { error: "Authorization token is required." };
+      return { error: 'Authorization token is required.' };
     }
 
-    const token = authHeader.split(" ")[1];
+    const token = authHeader.split(' ')[1];
     try {
       const decoded = jwt.verify(token, PRIVATE_KEY) as {
         userID: string;
@@ -57,6 +57,6 @@ export const userRoutes = new Elysia({ prefix: "/user" })
       };
       return { user: decoded };
     } catch (error) {
-      return { error: "Invalid or expired token." };
+      return { error: 'Invalid or expired token.' };
     }
   });

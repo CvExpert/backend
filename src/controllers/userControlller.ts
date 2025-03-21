@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import { db } from "../database";
-import { usersModel } from "../models/models";
+import { filesModel, usersModel } from "../models/models";
 import { eq } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
 
@@ -90,5 +90,22 @@ export async function signUp(name: string, email: string, password: string) {
   } catch (error) {
     console.error("Error signing up:", error);
     throw new Error("Failed to sign up. Please try again.");
+  }
+}
+
+export async function getAllFiles(userID: string) {
+  try {
+    const res = await db
+      .select({
+        fileID: filesModel.fileID,
+        projectName: filesModel.projectName, // Optional if you need it
+      })
+      .from(filesModel)
+      .where(eq(filesModel.userID, userID));
+
+    return res; // Returning JSON response
+  } catch (error) {
+    console.error('Error fetching files:', error);
+    throw new Error('Failed to fetch files');
   }
 }

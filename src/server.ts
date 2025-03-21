@@ -7,6 +7,11 @@ import { userRoutes } from "./routes/userRoutes";
 import { uploadRoute } from "./routes/uploadRoutes";
 import { analyzeRoute } from "./routes/analyzeRoutes";
 import cors from "@elysiajs/cors";
+import { analyzeFileUsingAI } from "./controllers/analyzeController";
+
+interface IBody {
+  file : File;
+}
 
 const app = new Elysia()
   .use(
@@ -17,6 +22,11 @@ const app = new Elysia()
   .use(userRoutes)
   .use(uploadRoute)
   .use(analyzeRoute)
+  // .post('/tt', async ({ body } : {body : IBody}) => {
+  //   const {file} = body;
+  //   const response = await analyzeFileUsingAI(file);
+  //   return { message: response};
+  // })
   .listen(3000);
 
 // Use swagger in development server

@@ -18,12 +18,14 @@
     "@electric-sql/pglite": "^0.2.16",
     "@elysiajs/cors": "^1.2.0",
     "@elysiajs/jwt": "^1.2.0",
+    "@google/generative-ai": "^0.24.0",
     "appwrite": "^17.0.1",
     "better-auth": "^1.1.16",
     "dotenv": "^16.4.7",
     "drizzle-orm": "^0.39.2",
     "elysia": "^1.2.12",
     "jsonwebtoken": "^9.0.2",
+    "pdfjs-dist": "^5.0.375",
     "postgres": "^3.4.5",
     "uuid": "^11.1.0"
   }

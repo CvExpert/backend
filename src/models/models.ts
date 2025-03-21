@@ -6,7 +6,6 @@ export const usersModel = pgTable('users', {
   name: text('name').notNull(),
   email: text('email').notNull().unique(),
   password: varchar('password', { length: 255 }).notNull(), // Use varchar for security
-  projectCount: integer('project_count').notNull().default(0),
 });
 
 // Files Table
@@ -24,7 +23,6 @@ export const analyzeModel = pgTable('analyze', {
   fileID: varchar('file_id', { length: 255 })
     .primaryKey()
     .references(() => filesModel.fileID, { onDelete: 'cascade' }),
-  wordLength: text('word_length').notNull(),
   experience: text('experience').notNull(),
   education: text('education').notNull(),
   achievements: text('achievements').notNull(),

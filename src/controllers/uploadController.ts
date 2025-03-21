@@ -2,6 +2,7 @@ import { db } from "../database";
 import { filesModel } from "../models/models";
 import { appwriteEndpointURL, appwriteProjectID, appwriteStorageBucketID } from "../secrets";
 import { uploadResumeFile } from "../storage";
+import { analyzeFileUsingAI } from "./analyzeController";
 
 export async function uploadFile(file:File, userID:string, projectName:string){ {
   try {
@@ -12,10 +13,9 @@ export async function uploadFile(file:File, userID:string, projectName:string){ 
     // Uploading to database
     const dbResponse = await putFileInfoDB(response.$id, userID, projectName);
     if(dbResponse){
-      return 
-      {
-        fileID: response?.$id
-      };
+      const fileID = response?.$id;
+      const llmResponse = await analyzeFileUsingAI(file, fileID);
+      return { success: true, fileID, analysis : llmResponse };
     }
     throw new Error("Failed to upload in db")
   } catch (error: any) {
@@ -38,17 +38,3 @@ async function putFileInfoDB(fileID:string, userID:string, projectName:string){
   }
 }
 }
-
-// await db
-//       .insert(usersModel)
-//       .values({ userID, name, email, password: hashedPassword })
-//       .returning();
-
-// export const filesModel = pgTable("files", {
-//   fileID: varchar("file_id", { length: 255 }).primaryKey(),
-//   userID: text("user_id")
-//     .notNull()
-//     .references(() => usersModel.userID, { onDelete: "cascade" }),
-//   projectName : text("project_name").default("untitled"),
-//   fileLink: text("file_link").notNull(),
-// });

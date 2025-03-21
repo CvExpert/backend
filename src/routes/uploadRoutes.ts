@@ -1,5 +1,6 @@
 import { Elysia } from 'elysia';
 import { uploadFile } from '../controllers/uploadController';
+import { getAllFiles } from '../controllers/userControlller';
 
 interface UploadBody {
   file: File;
@@ -22,13 +23,8 @@ export const uploadRoute = new Elysia({ prefix: '/file' })
     }
     const response = await uploadFile(file, userID, projectName);
 
-    if (response && 'fileID' in response) {
-      return {
-        data: {
-          msg: 'File Uploaded successfully',
-          fileID: response.fileID,
-        },
-      };
+    if (response) {
+      return response;
     } else {
       return { error: 'File upload failed or fileID is missing.' };
     }
@@ -40,8 +36,14 @@ export const uploadRoute = new Elysia({ prefix: '/file' })
       return { error: 'User ID and email are required.' };
     }
     try {
-      console.log(`get files : ${userID} , ${email}`);
-      return { message: 'Get files' };
+      const response = await getAllFiles(userID);
+      if(response){
+        return {
+          data:{
+            ...response
+          }
+        }
+      }
     } catch (error: any) {
       console.log(error);
       return { error: error.message };

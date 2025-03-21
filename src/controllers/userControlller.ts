@@ -5,7 +5,6 @@ import { eq } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
 
 const PRIVATE_KEY = process.env.PRIVATE_KEY as string;
-const REFRESH_PRIVATE_KEY = process.env.REFRESH_PRIVATE_KEY as string;
 
 export async function signIn(email: string, password: string) {
   try {
@@ -33,16 +32,8 @@ export async function signIn(email: string, password: string) {
       { algorithm: "HS256", expiresIn: "15m" }, // Shorter expiry for security
     );
 
-    // Generate Refresh Token (Longer-lived)
-    const refreshToken = jwt.sign(
-      { userID: user.userID },
-      REFRESH_PRIVATE_KEY,
-      { algorithm: "HS256", expiresIn: "7d" }, // Longer expiry for refresh token
-    );
-
     return {
       accessToken, // Short-lived token
-      refreshToken, // Long-lived token
       user: {
         userID: user.userID,
         name: user.name,
@@ -88,16 +79,8 @@ export async function signUp(name: string, email: string, password: string) {
       { algorithm: "HS256", expiresIn: "15m" },
     );
 
-    // Generate Refresh Token
-    const refreshToken = jwt.sign(
-      { userID: newUser[0].userID },
-      REFRESH_PRIVATE_KEY,
-      { algorithm: "HS256", expiresIn: "7d" },
-    );
-
     return {
       accessToken,
-      refreshToken,
       user: {
         userID,
         name,

@@ -1,8 +1,7 @@
 import { Elysia } from 'elysia';
 import { signIn, signUp } from '../controllers/userControlller';
 import jwt from 'jsonwebtoken';
-
-const PRIVATE_KEY = process.env.PRIVATE_KEY as string;
+import { authPrivateKey } from '../secrets';
 
 interface SignInBody {
   email: string;
@@ -31,7 +30,7 @@ export const userRoutes = new Elysia({ prefix: '/user' })
   })
   .post('/signup', async ({ body }: { body: SignUpBody }) => {
     console.log('signup called');
-    const { name, email, password, terms } = body;
+    const { name, email, password } = body;
     if (!name || !email || !password) {
       return { error: 'All fields are required.' };
     }
@@ -51,7 +50,7 @@ export const userRoutes = new Elysia({ prefix: '/user' })
 
     const token = authHeader.split(' ')[1];
     try {
-      const decoded = jwt.verify(token, PRIVATE_KEY) as {
+      const decoded = jwt.verify(token, authPrivateKey) as {
         userID: string;
         email: string;
       };

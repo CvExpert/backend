@@ -6,6 +6,7 @@ import { analyzeFileUsingAI } from "./analyzeController";
 
 export async function uploadFile(file:File, userID:string, projectName:string){ {
   try {
+    // Uploading file to storage
     const response = await uploadResumeFile(file);
     if(response){
       console.log("upload file success");
@@ -14,10 +15,13 @@ export async function uploadFile(file:File, userID:string, projectName:string){ 
     const dbResponse = await putFileInfoDB(response.$id, userID, projectName);
     if(dbResponse){
       const fileID = response?.$id;
-      const llmResponse = await analyzeFileUsingAI(file, fileID);
-      return { success: true, fileID, analysis : llmResponse };
+      console.log("File Information uploaded to db");
+      console.log("File ID: ", fileID);
     }
-    throw new Error("Failed to upload in db")
+    else throw new Error("Failed to upload in db")
+
+    // Return the response
+    return { success: true, fileID: response?.$id };
   } catch (error: any) {
     console.log(error);
     return { error: error?.message };
@@ -25,7 +29,7 @@ export async function uploadFile(file:File, userID:string, projectName:string){ 
 }
 
 async function putFileInfoDB(fileID:string, userID:string, projectName:string){
-  // Put file info to db
+  // Put file info to database
   try {
     const fileLink = `${appwriteEndpointURL}/storage/buckets/${appwriteStorageBucketID}/files/${fileID}/view?project=${appwriteProjectID}`;
     const response = await db
@@ -37,4 +41,10 @@ async function putFileInfoDB(fileID:string, userID:string, projectName:string){
     return {error : error?.message};
   }
 }
+}
+
+export function getFileURL(fileID:string){
+  // Get file URL
+  const fileLink = `${appwriteEndpointURL}/storage/buckets/${appwriteStorageBucketID}/files/${fileID}/view?project=${appwriteProjectID}`;
+  return fileLink;
 }

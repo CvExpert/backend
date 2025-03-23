@@ -1,10 +1,9 @@
-import jwt from "jsonwebtoken";
-import { db } from "../database";
-import { filesModel, usersModel } from "../models/models";
-import { eq } from "drizzle-orm";
-import { v4 as uuidv4 } from "uuid";
-
-const PRIVATE_KEY = process.env.PRIVATE_KEY as string;
+import jwt from 'jsonwebtoken';
+import { db } from '../database';
+import { filesModel, usersModel } from '../models/models';
+import { eq } from 'drizzle-orm';
+import { v4 as uuidv4 } from 'uuid';
+import { authPrivateKey } from '../secrets';
 
 export async function signIn(email: string, password: string) {
   try {
@@ -15,21 +14,21 @@ export async function signIn(email: string, password: string) {
       .where(eq(usersModel.email, email));
 
     if (!user) {
-      throw new Error("Invalid Email or Password");
+      throw new Error('Invalid Email or Password');
     }
 
     // Verify password
     const isPasswordValid = await Bun.password.verify(password, user.password);
 
     if (!isPasswordValid) {
-      throw new Error("Invalid email or password.");
+      throw new Error('Invalid email or password.');
     }
 
     // Generate Access Token (Short-lived)
     const accessToken = jwt.sign(
       { userID: user.userID, email: user.email },
-      PRIVATE_KEY,
-      { algorithm: "HS256", expiresIn: "15m" }, // Shorter expiry for security
+      authPrivateKey,
+      { algorithm: 'HS256', expiresIn: '15m' }, // Shorter expiry for security
     );
 
     return {
@@ -41,8 +40,8 @@ export async function signIn(email: string, password: string) {
       },
     };
   } catch (error) {
-    console.error("Error signing in:", error);
-    throw new Error("Failed to sign in. Please check your credentials.");
+    console.error('Error signing in:', error);
+    throw new Error('Failed to sign in. Please check your credentials.');
   }
 }
 
@@ -54,8 +53,8 @@ export async function signUp(name: string, email: string, password: string) {
       .from(usersModel)
       .where(eq(usersModel.email, email));
     if (existingUser) {
-      console.log("User already exists");
-      throw new Error("Email already in use.");
+      console.log('User already exists');
+      throw new Error('Email already in use.');
     }
 
     const userID = uuidv4();
@@ -69,14 +68,14 @@ export async function signUp(name: string, email: string, password: string) {
       .values({ userID, name, email, password: hashedPassword })
       .returning();
 
-    console.log("Inserted user with ID:", newUser[0].userID);
-    console.log("User details:", newUser);
+    console.log('Inserted user with ID:', newUser[0].userID);
+    console.log('User details:', newUser);
 
     // Generate Access Token
     const accessToken = jwt.sign(
       { userID: newUser[0].userID, email: newUser[0].email },
-      PRIVATE_KEY,
-      { algorithm: "HS256", expiresIn: "15m" },
+      authPrivateKey,
+      { algorithm: 'HS256', expiresIn: '15m' },
     );
 
     return {
@@ -88,8 +87,8 @@ export async function signUp(name: string, email: string, password: string) {
       },
     };
   } catch (error) {
-    console.error("Error signing up:", error);
-    throw new Error("Failed to sign up. Please try again.");
+    console.error('Error signing up:', error);
+    throw new Error('Failed to sign up. Please try again.');
   }
 }
 

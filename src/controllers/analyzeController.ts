@@ -3,10 +3,7 @@ import { getDocument } from 'pdfjs-dist';
 import { model } from '../gemini';
 import { db } from '../database';
 import { analyzeModel } from '../models/models';
-
-async function checkFilePermission(fileId: string, userId: string) {
-  return true;
-}
+import { checkFilePermission } from './accessController';
 
 export async function analyzeFile(fileId: string, userId: string) {
   const permission = await checkFilePermission(fileId, userId);
@@ -30,17 +27,23 @@ async function analyzeTextLLM(text: string) {
     "resumeStyleScore": integer,
     "resumeScore": integer
     }
+    I'm making an backend app that analyzes resumes and I need only the structured JSON response.
+    Only include the information that is requested in the response.
+    Follow these guidelines properly : 
 
-    Ensure the response is a valid JSON object without additional explanations.
-    Don't include any additional information in the response.
-    Don't include a \` symbol anywhere in the response.
-    Start response from { and end with }.
-    Don't write json or other things in the response
-    Keep the response clean and simple, but informative and detailed.
+    - Ensure the response is a valid JSON object without additional explanations.
+    - Don't include any additional information in the response.
+    - Don't include a \` symbol anywhere in the response.
+    - Start response from { and end with }.
+    - Don't write json or other things in the response
+    - Keep the response clean and simple, but informative and detailed.
+    - Keep the output clean and detailed.
+
 
     **Resume Content:**
     ${text}
   `;
+    // Generate content using the model
     const result = await model.generateContent(prompt);
 
     // Return the response text
@@ -52,6 +55,7 @@ async function analyzeTextLLM(text: string) {
 }
 
 export async function analyzeFileUsingAI(file: File, fileID: string) {
+  // Take input as a file and analyze it using AI
   console.log('Analyzing file using AI');
   try {
     const buffer = Buffer.from(await file.arrayBuffer());
@@ -67,10 +71,11 @@ export async function analyzeFileUsingAI(file: File, fileID: string) {
         .join(' ');
       text += pageText + '\n';
     }
-    console.log(text);
+    console.log('Text extracted from the PDF');
 
     // Analyze the text using LLM
     const responseText = await analyzeTextLLM(text);
+    console.log('LLM response text');
     console.log(responseText);
 
     // Parse the response JSON
@@ -91,6 +96,7 @@ export async function analyzeFileUsingAI(file: File, fileID: string) {
       resumeStyleScore: responseJSON.resumeStyleScore,
       resumeScore: responseJSON.resumeScore,
     });
+    console.log('Analysis inserted into the database');
 
     // Return the response
     return { success: true, fileID, response: responseJSON };
@@ -100,6 +106,7 @@ export async function analyzeFileUsingAI(file: File, fileID: string) {
   }
 }
 
+// To Do: Implement the chatUsingAI function
 export async function chatUsingAI(message: string) {
   try {
   } catch (error: any) {

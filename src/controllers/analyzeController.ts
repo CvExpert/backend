@@ -5,7 +5,6 @@ import { db } from '../database';
 import { analyzeModel } from '../models/models';
 import { checkFileAccess } from './accessController';
 
-
 export async function analyzeFile(fileId: string, userId: string) {
   const permission = await checkFileAccess(fileId, userId);
   if (permission) {

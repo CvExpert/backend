@@ -1,9 +1,9 @@
-import { eq } from "drizzle-orm";
-import { db } from "../database";
-import { filesModel } from "../models/models";
+import { eq } from 'drizzle-orm';
+import { db } from '../database';
+import { filesModel } from '../models/models';
 
 // Function to check file existence and access
-export async function checkFileAccess(fileID: string, userID: string): Promise<boolean> {
+export async function checkFileAccess(fileID: string, userID: string) {
   const file = await db
     .select()
     .from(filesModel)

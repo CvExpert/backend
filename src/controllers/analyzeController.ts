@@ -3,10 +3,11 @@ import { getDocument } from 'pdfjs-dist';
 import { model } from '../gemini';
 import { db } from '../database';
 import { analyzeModel } from '../models/models';
-import { checkFilePermission } from './accessController';
+import { checkFileAccess } from './accessController';
+
 
 export async function analyzeFile(fileId: string, userId: string) {
-  const permission = await checkFilePermission(fileId, userId);
+  const permission = await checkFileAccess(fileId, userId);
   if (permission) {
     console.log('User have permission');
   }

@@ -47,10 +47,8 @@ export const userRoutes = new Elysia({ prefix: '/user' })
     if (!authHeader) {
       return { error: 'Authorization token is required.' };
     }
-
-    const token = authHeader.split(' ')[1];
     try {
-      const decoded = jwt.verify(token, authPrivateKey) as {
+      const decoded = jwt.verify(authHeader, authPrivateKey) as {
         userID: string;
         email: string;
       };

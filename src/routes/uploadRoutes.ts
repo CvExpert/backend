@@ -10,7 +10,6 @@ interface UploadBody {
   file: File;
   projectName: string;
   userID: string;
-  email: string;
 }
 
 interface GetFiles {
@@ -43,7 +42,7 @@ export const uploadRoute = new Elysia({ prefix: '/file' }).guard(
     app
       .post('/upload', async ({ body }: { body: UploadBody }) => {
         console.log('upload called');
-        const { file, userID, email, projectName } = body;
+        const { file, userID, projectName } = body;
         if (!file) {
           return { error: 'File is required.' };
         }

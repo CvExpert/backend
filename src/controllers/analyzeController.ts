@@ -25,7 +25,10 @@ async function analyzeTextLLM(text: string) {
     "educationScore": integer,
     "achievementScore": integer,
     "resumeStyleScore": integer,
-    "resumeScore": integer
+    "resumeScore": integer,
+    "strengths": [],
+    "weaknesses": [],
+    "suggestions": []
     }
     I'm making an backend app that analyzes resumes and I need only the structured JSON response.
     Only include the information that is requested in the response.

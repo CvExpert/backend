@@ -12,9 +12,40 @@ export async function analyzeFile(fileId: string, userId: string) {
   }
 }
 
+// Adds extra functionality to clean up the resume text, removed because it
+// adds cost to output
+
+// async function cleanUpResumeText(text: string) {
+//   const promt = `
+//   Clean up the given resume text by removing any unnecessary information,
+//   formatting it properly, and ensuring it is clear and concise.
+//   The cleaned resume should be easy to read and understand with proper headings and sections.
+//   Remove any personal information such as name, address, phone number, and email.
+//   The cleaned resume should be in plain text format without any special characters or formatting.
+
+//   **Resume Content:**
+//   ${text}
+//   `;
+//   try {
+//     // Generate content using the model
+//     const result = await model.generateContent(promt);
+
+//     // Return the response text
+//     return result?.response.text();
+//   } catch (error: any) {
+//     console.log(error);
+//     return { error: error?.message };
+//   }
+// }
+
+
 async function analyzeTextLLM(text: string) {
   try {
     // Construct the prompt properly
+    // Clean up the resume text
+    console.log('Cleaned resume text');
+    console.log(text);
+    // Analyze the cleaned resume text
     const prompt = `
     Analyze the given resume and return a structured JSON response with the following format:
     {
@@ -30,7 +61,7 @@ async function analyzeTextLLM(text: string) {
     "weaknesses": [],
     "suggestions": []
     }
-    I'm making an backend app that analyzes resumes and I need only the structured JSON response.
+    This is an backend app that analyzes resumes and I need only the structured JSON response.
     Only include the information that is requested in the response.
     Follow these guidelines properly : 
 
@@ -41,7 +72,8 @@ async function analyzeTextLLM(text: string) {
     - Don't write json or other things in the response
     - Keep the response clean and simple, but informative and detailed.
     - Keep the output clean and detailed.
-
+    - If there are any missing sections in the resume, return an empty string for that section.
+    - If the resume is not well structured, return an empty string for all sections.
 
     **Resume Content:**
     ${text}
@@ -50,12 +82,39 @@ async function analyzeTextLLM(text: string) {
     const result = await model.generateContent(prompt);
 
     // Return the response text
-    return result?.response.text();
+    if(result?.response.text().length === 0) {
+      return { error: 'Falied to analyze.' };
+    }
+
+    console.log("analyzeTextLLM :: Successfully generated content.")
+
+    // Ensure the response is a valid JSON object
+    // Use regex to remove any unwanted characters
+
+    const match = result?.response.text().match(/{[\s\S]*}/);
+    if (!match || match.length === 0) {
+      return { error: 'Failed to parse response.' };
+    }
+    console.log("analyzeTextLLM :: Successfully parsed text to JSON text.");
+    // Return the first match
+    const jsonResult = match[0];
+    const jsonObject = JSON.parse(jsonResult);
+    if(!jsonObject) {
+      return { error: 'Failed to JSON text to JSON object' };
+    }
+    console.log("analyzeTextLLM :: Successfully parsed text to JSON object.");
+    console.log(
+      `analyzeTextLLM :: Successfully parsed text to JSON object: 
+      ${JSON.stringify(jsonObject)}
+      `
+    )
+    return jsonObject;
   } catch (error: any) {
     console.log(error);
     return { error: error?.message };
   }
 }
+
 
 export async function analyzeFileUsingAI(file: File, fileID: string) {
   // Take input as a file and analyze it using AI
@@ -82,7 +141,7 @@ export async function analyzeFileUsingAI(file: File, fileID: string) {
     console.log(responseText);
 
     // Parse the response JSON
-    const responseJSON =
+    const responseJSON =jsonString
       typeof responseText === 'string'
         ? JSON.parse(responseText)
         : responseText;

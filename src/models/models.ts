@@ -8,6 +8,7 @@ export const usersModel = pgTable('users', {
   password: varchar('password', { length: 255 }).notNull(), // Use varchar for security
 });
 
+
 // Files Table
 export const filesModel = pgTable('files', {
   fileID: varchar('file_id', { length: 255 }).primaryKey(),
@@ -17,6 +18,7 @@ export const filesModel = pgTable('files', {
   projectName: text('project_name').default('untitled'),
   fileLink: text('file_link').notNull(),
 });
+
 
 // Analysis Table
 export const analyzeModel = pgTable('analyze', {

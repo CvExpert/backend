@@ -32,12 +32,15 @@ export async function signIn(email: string, password: string) {
     );
 
     return {
+      title: 'Authentication',
+      message: 'Authentication successful',
+      success: true,
       accessToken, // Short-lived token
       user: {
         userID: user.userID,
         name: user.name,
         email: user.email,
-      },
+      }
     };
   } catch (error) {
     console.error('Error signing in:', error);
@@ -79,12 +82,17 @@ export async function signUp(name: string, email: string, password: string) {
     );
 
     return {
-      accessToken,
-      user: {
-        userID,
-        name,
-        email,
-      },
+      title: 'Authentication',
+      message: 'Authentication successful',
+      success: true,
+      data: {
+        accessToken,
+        user: {
+          userID,
+          name,
+          email,
+        }
+      }
     };
   } catch (error) {
     console.error('Error signing up:', error);

@@ -14,11 +14,7 @@ interface IBody {
 
 const app = new Elysia()
   .use(
-    cors({
-      origin: 'http://localhost:5174',
-      credentials: true, // allow cookies/auth headers if needed
-      allowedHeaders: ['Content-Type', 'Authorization'], // add other headers if your frontend sends them
-    }),
+    cors(),
   )
   .use(userRoutes)
   .use(uploadRoute)

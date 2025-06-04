@@ -5,7 +5,15 @@ import { appwriteStorageBucketID } from "./secrets";
 const storage = new Storage(Appwriteclient);
 
 export const uploadResumeFile = async (file: File) => {
-  // Upload file to storage
-  const fileDataPromise = await storage.createFile(appwriteStorageBucketID, ID.unique(), file);
-  return fileDataPromise;
+  try {
+    const fileDataPromise = await storage.createFile(
+      appwriteStorageBucketID,
+      ID.unique(),
+      file
+    );
+    return fileDataPromise;
+  } catch (error: any) {
+    console.error("Error uploading file:", error);
+    return { error: error.message };
+  }
 }

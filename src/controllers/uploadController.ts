@@ -1,3 +1,4 @@
+import { uuid } from 'drizzle-orm/pg-core';
 import { db } from '../database';
 import { filesModel } from '../models/models';
 import {
@@ -6,6 +7,8 @@ import {
   appwriteStorageBucketID,
 } from '../secrets';
 import { uploadResumeFile } from '../storage';
+import { ID } from 'appwrite';
+import { analyzeFileUsingAI } from './analyzeController';
 
 export async function uploadFile(
   file: File,
@@ -15,20 +18,29 @@ export async function uploadFile(
   {
     try {
       // Uploading file to storage
-      const response = await uploadResumeFile(file);
-      if (response) {
-        console.log('upload file success');
-      }
+      // console.log('Trying uploading file to storage');
+      // const response = await uploadResumeFile(file);
+      // console.log(response)
+      // if (response) {
+      //   console.log('upload file success');
+      // }
       // Uploading to database
-      const dbResponse = await putFileInfoDB(response.$id, userID, projectName);
+      console.log('Trying uploading file information to db');
+      const fileID = ID.unique();
+      const dbResponse = await putFileInfoDB(fileID, userID, projectName);
+
       if (dbResponse) {
-        const fileID = response?.$id;
         console.log('File Information uploaded to db');
         console.log('File ID: ', fileID);
       } else throw new Error('Failed to upload in db');
-
+      const fileAnalysis = await analyzeFileUsingAI(file, fileID);
+      if (fileAnalysis.error) {
+        throw new Error(fileAnalysis.error);
+      }
+      console.log('File Analysis completed successfully');
+      console.log('File Analysis Response: ', fileAnalysis);
       // Return the response
-      return { success: true, fileID: response?.$id };
+      return { success: true, fileID: fileID };
     } catch (error: any) {
       console.log(error);
       return { error: error?.message };

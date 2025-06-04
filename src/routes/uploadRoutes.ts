@@ -22,6 +22,10 @@ interface GetFilesPDF {
   fileID: string;
 }
 
+interface GetAllFilesInterface {
+  userID: string;
+}
+
 export const uploadRoute = new Elysia({ prefix: '/file' }).guard(
   {
     beforeHandle({ request, error }) {
@@ -119,5 +123,30 @@ export const uploadRoute = new Elysia({ prefix: '/file' }).guard(
           set.status = 500;
           return { error: 'Internal Server Error' };
         }
-      }),
+      }
+
+      )
+      .get('/getallfiles', async ({ query }: { query: { userID?: string } }) => {
+        console.log('Files:getallfiles :: Get all files called');
+        const { userID } = query;
+
+        if (!userID) {
+          console.log('User ID not found');
+          return { error: 'User ID is required.' };
+        }
+
+        try {
+          const response = await getAllFiles(userID);
+          if (response) {
+            return {
+              data: {
+                ...response,
+              },
+            };
+          }
+        } catch (error: any) {
+          console.log(error);
+          return { error: error.message };
+        }
+      })
 );

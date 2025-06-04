@@ -1,9 +1,9 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { getDocument } from 'pdfjs-dist';
 import { model } from '../gemini';
 import { db } from '../database';
-import { analyzeModel } from '../models/models';
+import { analyzeModel, filesModel } from '../models/models';
 import { checkFileAccess } from './accessController';
+import { eq } from 'drizzle-orm';
 
 export async function analyzeFile(fileId: string, userId: string) {
   const permission = await checkFileAccess(fileId, userId);
@@ -116,37 +116,29 @@ async function analyzeTextLLM(text: string) {
 }
 
 
+// import { getDocument } from 'pdfjs-dist/legacy/build/pdf.js';
+
+// import { getDocument } from 'pdfjs-dist/legacy/build/pdf.js';
+
+
+
+// import pdfParse from pdfParse
+
 export async function analyzeFileUsingAI(file: File, fileID: string) {
-  // Take input as a file and analyze it using AI
-  console.log('Analyzing file using AI');
   try {
-    const buffer = Buffer.from(await file.arrayBuffer());
-    const pdf = await getDocument({ data: new Uint8Array(buffer) }).promise;
-    let text = '';
+    // Convert File stream to Buffer
+    const buffer = await new Response(file.stream()).arrayBuffer();
 
-    // Loop through all pages and extract text
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i);
-      const content = await page.getTextContent();
-      const pageText = content.items
-        .map(item => ('str' in item ? item.str : ''))
-        .join(' ');
-      text += pageText + '\n';
-    }
-    console.log('Text extracted from the PDF');
+    // Use pdf-parse to extract full text
+    const result = await pdfParse(Buffer.from(buffer));
+    const text = result.text;
 
-    // Analyze the text using LLM
-    const responseText = await analyzeTextLLM(text);
-    console.log('LLM response text');
-    console.log(responseText);
+    console.log('Extracted text:\n', text);
 
-    // Parse the response JSON
-    const responseJSON =jsonString
-      typeof responseText === 'string'
-        ? JSON.parse(responseText)
-        : responseText;
+    // Analyze text using your LLM
+    const responseJSON = await analyzeTextLLM(text);
 
-    // Insert the analysis into the database
+    // Store results in the database
     await db.insert(analyzeModel).values({
       fileID,
       experience: responseJSON.experience,
@@ -158,20 +150,38 @@ export async function analyzeFileUsingAI(file: File, fileID: string) {
       resumeStyleScore: responseJSON.resumeStyleScore,
       resumeScore: responseJSON.resumeScore,
     });
-    console.log('Analysis inserted into the database');
 
-    // Return the response
+    console.log('Analysis inserted into DB');
     return { success: true, fileID, response: responseJSON };
-  } catch (error: any) {
-    console.log('Error analyzing file');
-    return { error: error?.message };
+
+  } catch (err: any) {
+    console.error('PDF parsing failed:', err);
+    return { error: err?.message ?? 'Unknown error parsing PDF' };
   }
 }
+
 
 // To Do: Implement the chatUsingAI function
 export async function chatUsingAI(message: string) {
   try {
   } catch (error: any) {
+    console.log(error);
+    return { error: error?.message };
+  }
+}
+
+export async function getUserFiles(userID : string){
+  try{
+    const res = await db
+      .select({
+      fileID: filesModel.fileID,
+      projectName: filesModel.projectName
+      })
+      .from(filesModel)
+      .where(eq(filesModel.userID, userID));
+    return res;
+  }
+  catch (error: any) {
     console.log(error);
     return { error: error?.message };
   }

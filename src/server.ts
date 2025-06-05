@@ -14,7 +14,10 @@ interface IBody {
 
 const app = new Elysia()
   .use(
-    cors(),
+    cors({
+      origin: 'http://localhost:5173',
+      credentials: true,
+    })
   )
   .use(userRoutes)
   .use(uploadRoute)

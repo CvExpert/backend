@@ -24,11 +24,11 @@ export async function signIn(email: string, password: string) {
       throw new Error('Invalid email or password.');
     }
 
-    // Generate Access Token (Short-lived)
+    // Generate Access Token (Longer-lived for persistent login)
     const accessToken = jwt.sign(
       { userID: user.userID, email: user.email },
       authPrivateKey,
-      { algorithm: 'HS256', expiresIn: '15m' }, // Shorter expiry for security
+      { algorithm: 'HS256', expiresIn: '7d' }, // 7 days expiry
     );
 
     return {
@@ -74,11 +74,11 @@ export async function signUp(name: string, email: string, password: string) {
     console.log('Inserted user with ID:', newUser[0].userID);
     console.log('User details:', newUser);
 
-    // Generate Access Token
+    // Generate Access Token (Longer-lived for persistent login)
     const accessToken = jwt.sign(
       { userID: newUser[0].userID, email: newUser[0].email },
       authPrivateKey,
-      { algorithm: 'HS256', expiresIn: '15m' },
+      { algorithm: 'HS256', expiresIn: '7d' }, // 7 days expiry
     );
 
     return {

@@ -5,6 +5,8 @@ import {
   checkFileAccess,
   checkValidation,
 } from '../controllers/accessController';
+import jwt from 'jsonwebtoken';
+import { authPrivateKey } from '../secrets';
 
 interface UploadBody {
   file: File;
@@ -29,15 +31,15 @@ interface GetAllFilesInterface {
 export const uploadRoute = new Elysia({ prefix: '/file' }).guard(
   {
     beforeHandle({ request, error }) {
-      const authHeader = request.headers.get('authorization');
-      if (!authHeader) {
-        return error(400, 'Unauthorized');
-      }
-      // Check if the token is valid
-      const valid = checkValidation(authHeader);
-
-      // Return error if token is invalid
-      if (!valid) {
+      const cookie = request.headers.get('cookie');
+      if (!cookie) return error(400, 'Unauthorized');
+      const match = cookie.match(/accessToken=([^;]+)/);
+      if (!match) return error(400, 'Unauthorized');
+      const token = match[1];
+      try {
+        jwt.verify(token, authPrivateKey);
+        return;
+      } catch {
         return error(400, 'Unauthorized');
       }
     },

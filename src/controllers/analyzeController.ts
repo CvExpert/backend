@@ -4,6 +4,7 @@ import { db } from '../database';
 import { analyzeModel, filesModel } from '../models/models';
 import { checkFileAccess } from './accessController';
 import { eq } from 'drizzle-orm';
+import pdfParse from 'pdf-parse';
 
 export async function analyzeFile(fileId: string, userId: string) {
   const permission = await checkFileAccess(fileId, userId);
@@ -102,12 +103,9 @@ async function analyzeTextLLM(text: string) {
     if(!jsonObject) {
       return { error: 'Failed to JSON text to JSON object' };
     }
-    console.log("analyzeTextLLM :: Successfully parsed text to JSON object.");
-    console.log(
-      `analyzeTextLLM :: Successfully parsed text to JSON object: 
-      ${JSON.stringify(jsonObject)}
-      `
-    )
+    // Log the full AI output for debugging
+    console.log('AI Output (raw):', result?.response.text());
+    console.log('AI Output (parsed):', JSON.stringify(jsonObject, null, 2));
     return jsonObject;
   } catch (error: any) {
     console.log(error);
@@ -124,17 +122,8 @@ async function analyzeTextLLM(text: string) {
 
 // import pdfParse from pdfParse
 
-export async function analyzeFileUsingAI(file: File, fileID: string) {
+export async function analyzeFileUsingAI(text: string, fileID: string) {
   try {
-    // Convert File stream to Buffer
-    const buffer = await new Response(file.stream()).arrayBuffer();
-
-    // Use pdf-parse to extract full text
-    const result = await pdfParse(Buffer.from(buffer));
-    const text = result.text;
-
-    console.log('Extracted text:\n', text);
-
     // Analyze text using your LLM
     const responseJSON = await analyzeTextLLM(text);
 
@@ -153,10 +142,9 @@ export async function analyzeFileUsingAI(file: File, fileID: string) {
 
     console.log('Analysis inserted into DB');
     return { success: true, fileID, response: responseJSON };
-
   } catch (err: any) {
-    console.error('PDF parsing failed:', err);
-    return { error: err?.message ?? 'Unknown error parsing PDF' };
+    console.error('Text analysis failed:', err);
+    return { error: err?.message ?? 'Unknown error analyzing text' };
   }
 }
 

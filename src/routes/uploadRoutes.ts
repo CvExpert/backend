@@ -1,12 +1,15 @@
 import { Elysia } from 'elysia';
 import { getFileURL, uploadFile } from '../controllers/uploadController';
-import { getAllFiles } from '../controllers/userControlller';
+import { getAllFiles } from '../controllers/userController';
 import {
   checkFileAccess,
   checkValidation,
 } from '../controllers/accessController';
 import jwt from 'jsonwebtoken';
 import { authPrivateKey } from '../secrets';
+import { db } from '../database';
+import { analyzeModel } from '../models/models';
+import { eq } from 'drizzle-orm';
 
 interface UploadBody {
   file: File;
@@ -46,19 +49,18 @@ export const uploadRoute = new Elysia({ prefix: '/file' }).guard(
   },
   app =>
     app
-      .post('/upload', async ({ body }: { body: UploadBody }) => {
-        console.log('upload called');
-        const { file, userID, projectName } = body;
-        if (!file) {
-          return { error: 'File is required.' };
+      .post('/upload', async ({ request }: { request: Request }) => {
+        // Accept JSON body with text, userID, projectName
+        const contentType = request.headers.get('content-type') || '';
+        if (!contentType.includes('application/json')) {
+          return { error: 'Content-Type must be application/json' };
         }
-        const response = await uploadFile(file, userID, projectName);
-
-        if (response) {
-          return response;
-        } else {
-          return { error: 'File upload failed or fileID is missing.' };
+        const body = await request.json();
+        const { text, userID, projectName } = body;
+        if (!text || !userID) {
+          return { error: 'Text and userID are required.' };
         }
+        return await uploadFile(text, userID, projectName);
       })
       .get('/files', async ({ body }: { body: GetFiles }) => {
         console.log('get files called');
@@ -125,9 +127,7 @@ export const uploadRoute = new Elysia({ prefix: '/file' }).guard(
           set.status = 500;
           return { error: 'Internal Server Error' };
         }
-      }
-
-      )
+      })
       .get('/getallfiles', async ({ query }: { query: { userID?: string } }) => {
         console.log('Files:getallfiles :: Get all files called');
         const { userID } = query;
@@ -151,4 +151,5 @@ export const uploadRoute = new Elysia({ prefix: '/file' }).guard(
           return { error: error.message };
         }
       })
+      // (analysis route moved to analyzeRoutes.ts)
 );

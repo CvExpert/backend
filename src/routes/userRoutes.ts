@@ -1,5 +1,5 @@
 import { Elysia } from 'elysia';
-import { signIn, signUp } from '../controllers/userControlller';
+import { signIn, signUp } from '../controllers/userController';
 import jwt from 'jsonwebtoken';
 import { authPrivateKey } from '../secrets';
 
@@ -38,9 +38,10 @@ export const userRoutes = new Elysia({ prefix: '/user' })
       console.log(signInOutput)
       // Set cookie if sign in is successful
       if (signInOutput && signInOutput.accessToken) {
-        set.headers['Set-Cookie'] = `accessToken=${signInOutput.accessToken}; HttpOnly; Path=/; SameSite=None; Secure; Max-Age=604800;`;
+        set.headers['Set-Cookie'] = `accessToken=${signInOutput.accessToken}; HttpOnly; Path=/; SameSite=Lax; Max-Age=604800;`;
       }
-      return signInOutput;
+      // Always return user at root for frontend compatibility
+      return { ...signInOutput, user: signInOutput.user };
     } catch (error: any) {
       //return { error: error.message };
       return {
@@ -60,9 +61,10 @@ export const userRoutes = new Elysia({ prefix: '/user' })
       const signUpOutput = await signUp(name, email, password);
       // Set cookie if sign up is successful
       if (signUpOutput && signUpOutput.data && signUpOutput.data.accessToken) {
-        set.headers['Set-Cookie'] = `accessToken=${signUpOutput.data.accessToken}; HttpOnly; Path=/; SameSite=None; Secure; Max-Age=604800;`;
+        set.headers['Set-Cookie'] = `accessToken=${signUpOutput.data.accessToken}; HttpOnly; Path=/; SameSite=Lax; Max-Age=604800;`;
       }
-      return signUpOutput;
+      // Always return user at root for frontend compatibility
+      return { ...signUpOutput, user: signUpOutput.data?.user };
     } catch (error: any) {
       console.log(error);
       return {
@@ -128,4 +130,8 @@ export const userRoutes = new Elysia({ prefix: '/user' })
     } catch (error) {
       return { success: false, error: 'Invalid or expired token.' };
     }
+  })
+  .post('/signout', async ({ set }) => {
+    set.headers['Set-Cookie'] = 'accessToken=; HttpOnly; Path=/; Max-Age=0; SameSite=Lax;';
+    return { success: true };
   });

@@ -1,4 +1,4 @@
-import { pgTable, text, varchar, integer } from 'drizzle-orm/pg-core';
+import { pgTable, text, varchar, integer, jsonb } from 'drizzle-orm/pg-core';
 
 // User Table
 export const usersModel = pgTable('users', {
@@ -33,4 +33,12 @@ export const analyzeModel = pgTable('analyze', {
   achievementScore: integer('achievement_score').notNull(),
   resumeStyleScore: integer('resume_style_score').notNull(),
   resumeScore: integer('resume_score').notNull(),
+  projectScore: integer('project_score').default(0),
+  strengths: jsonb('strengths').notNull().default('[]'),
+  weaknesses: jsonb('weaknesses').notNull().default('[]'),
+  suggestions: jsonb('suggestions').notNull().default('[]'),
 });
+
+// Types for the analyze model
+export type Analyze = typeof analyzeModel.$inferSelect;
+export type NewAnalyze = typeof analyzeModel.$inferInsert;

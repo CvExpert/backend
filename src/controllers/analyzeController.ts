@@ -47,38 +47,38 @@ async function analyzeTextLLM(text: string) {
     console.log('Cleaned resume text');
     console.log(text);
     // Analyze the cleaned resume text
-    const prompt = `
-    Analyze the given resume and return a structured JSON response with the following format:
-    {
-    "experience": string,
-    "education": string,
-    "achievements": string,
-    "experienceScore": integer,
-    "educationScore": integer,
-    "achievementScore": integer,
-    "resumeStyleScore": integer,
-    "resumeScore": integer,
-    "strengths": [],
-    "weaknesses": [],
-    "suggestions": []
-    }
-    This is an backend app that analyzes resumes and I need only the structured JSON response.
-    Only include the information that is requested in the response.
-    Follow these guidelines properly : 
+    const prompt = `Analyze the given resume in detail and provide a comprehensive analysis in the following JSON format:
+{
+  "experience": "Detailed description of the candidate's work experience, including roles, responsibilities, and achievements.",
+  "education": "Detailed description of the candidate's educational background, including degrees, institutions, and relevant coursework.",
+  "achievements": "Notable achievements, awards, or recognitions the candidate has received.",
+  "experienceScore": 0,
+  "educationScore": 0,
+  "achievementScore": 0,
+  "resumeStyleScore": 0,
+  "resumeScore": 0,
+  "projectScore": 0,
+  "strengths": ["List", "of", "key", "strengths", "and", "skills"],
+  "weaknesses": ["List", "of", "potential", "areas", "for", "improvement"],
+  "suggestions": ["Actionable", "suggestions", "for", "improvement"]
+}
 
-    - Ensure the response is a valid JSON object without additional explanations.
-    - Don't include any additional information in the response.
-    - Don't include a \` symbol anywhere in the response.
-    - Start response from { and end with }.
-    - Don't write json or other things in the response
-    - Keep the response clean and simple, but informative and detailed.
-    - Keep the output clean and detailed.
-    - If there are any missing sections in the resume, return an empty string for that section.
-    - If the resume is not well structured, return an empty string for all sections.
+IMPORTANT INSTRUCTIONS:
+1. Return ONLY valid JSON without any additional text or markdown formatting.
+2. For strengths, include 5-8 key technical and soft skills that stand out.
+3. For weaknesses, provide 3-5 areas where the candidate could improve (be constructive).
+4. For suggestions, give 3-5 specific, actionable recommendations.
+5. All scores should be integers between 0-10.
+6. If a section is not applicable, use an empty string or empty array as appropriate.
+7. Do not include any markdown formatting or backticks in the response.
+8. Start with { and end with } - no other text should be included.
+9. Be detailed but concise in your analysis.
+10. For skills and technologies, be specific and include relevant frameworks/languages.
+11. For weaknesses and suggestions, always provide meaningful feedback even if the resume is strong.
+12. Ensure all arrays have at least 3 items, even if you need to be more general.
 
-    **Resume Content:**
-    ${text}
-  `;
+Resume Content:
+${text}`;
     // Generate content using the model
     const result = await model.generateContent(prompt);
 
@@ -122,7 +122,7 @@ async function analyzeTextLLM(text: string) {
 
 // import pdfParse from pdfParse
 
-export async function analyzeFileUsingAI(text: string, fileID: string) {
+export const analyzeFileUsingAI = async (text: string, fileID: string) => {
   try {
     // Analyze text using your LLM
     const responseJSON = await analyzeTextLLM(text);
@@ -130,14 +130,18 @@ export async function analyzeFileUsingAI(text: string, fileID: string) {
     // Store results in the database
     await db.insert(analyzeModel).values({
       fileID,
-      experience: responseJSON.experience,
-      education: responseJSON.education,
-      achievements: responseJSON.achievements,
-      experienceScore: responseJSON.experienceScore,
-      educationScore: responseJSON.educationScore,
-      achievementScore: responseJSON.achievementScore,
-      resumeStyleScore: responseJSON.resumeStyleScore,
-      resumeScore: responseJSON.resumeScore,
+      experience: responseJSON.experience || '',
+      education: responseJSON.education || '',
+      achievements: responseJSON.achievements || '',
+      experienceScore: responseJSON.experienceScore || 0,
+      educationScore: responseJSON.educationScore || 0,
+      achievementScore: responseJSON.achievementScore || 0,
+      resumeStyleScore: responseJSON.resumeStyleScore || 0,
+      resumeScore: responseJSON.resumeScore || 0,
+      projectScore: responseJSON.projectScore || 0,
+      strengths: responseJSON.strengths || [],
+      weaknesses: responseJSON.weaknesses || [],
+      suggestions: responseJSON.suggestions || []
     });
 
     console.log('Analysis inserted into DB');

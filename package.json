@@ -3,7 +3,8 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
-    "dev": "bun --watch src/server.ts"
+    "dev": "bun --watch src/server.ts",
+    "run": "bun run src/server.ts"
   },
   "devDependencies": {
     "@elysiajs/swagger": "^1.2.0",

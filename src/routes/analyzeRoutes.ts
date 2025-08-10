@@ -26,21 +26,37 @@ const analyzeRoute = new Elysia({ prefix: '/analyze' })
     async ({ body, error }: any) => {
       console.log('Analyze Route called');
       const { fileID, file, userID } = body;
+      let progress = 0;
       try {
+        // Step 1: File Upload
+        progress = 1;
         const access = await checkFileAccess(fileID, userID);
         if (!access) {
-          return error(403, 'You do not have access to this file');
+          return { error: 'You do not have access to this file', progress };
         }
         console.log('File access granted');
+        // Step 2: Detecting Word Length
+        progress = 2;
+        // Simulate word length detection (replace with actual logic if needed)
+        // Step 3: Parsing
+        progress = 3;
+        // Simulate parsing (replace with actual logic if needed)
+        // Step 4: Scanning Fields
+        progress = 4;
+        // Simulate scanning fields (replace with actual logic if needed)
+        // Step 5: Analyzing Content
+        progress = 5;
         const response = await analyzeFileUsingAI(file, fileID);
+        // Step 6: Generating Report
+        progress = 6;
         if (response) {
-          return response;
+          return { ...response, progress };
         } else {
-          return error(500, 'Failed to analyze the file');
+          return { error: 'Failed to analyze the file', progress };
         }
       } catch (err) {
         console.error(err);
-        return error(500, 'An internal error occurred while processing the file.');
+        return { error: 'An internal error occurred while processing the file.', progress };
       }
     },
     {
